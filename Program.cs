@@ -108,7 +108,9 @@ namespace FantasyGameLinkedList
             List<Hero> selectedParty = new List<Hero>();
             Hero current = guildLeader;
 
-            Console.WriteLine($"Selecting heroes for quest: {quest.Description}");
+            Console.WriteLine($"\nAs a dungeon recruiter trying to fight the bad rep...");
+            Console.WriteLine($"Selecting heroes carefully for the quest: {quest.Description}");
+
             while (selectedParty.Count < quest.Requirements.Count && current != null)
             {
                 if (quest.Requirements.Contains(current.Role))
@@ -121,7 +123,8 @@ namespace FantasyGameLinkedList
 
             if (selectedParty.Count < quest.Requirements.Count)
             {
-                Console.WriteLine("The party does not meet all the quest requirements.");
+                Console.WriteLine("The party doesn't quite meet all the quest requirements...");
+                Console.WriteLine("It seems you're falling into the same trap as the lazy recruiters before you!");
             }
 
             return selectedParty;
@@ -132,11 +135,13 @@ namespace FantasyGameLinkedList
         {
             if (party.Count < quest.Requirements.Count)
             {
-                Console.WriteLine("The party does not meet the quest's requirements. The quest is likely to fail.");
+                Console.WriteLine("\nOh no! The party doesn't meet the quest's requirements.");
+                Console.WriteLine("Looks like you're following in the footsteps of every other dungeon recruiter...");
                 return false;
             }
 
-            Console.WriteLine("The party meets the quest's requirements. The quest is likely to succeed!");
+            Console.WriteLine("\nSuccess! You've done what no recruiter has done before—assembled the right party!");
+            Console.WriteLine("The quest is likely to succeed, and your reputation as a skilled recruiter will grow!");
             return true;
         }
     }
@@ -172,7 +177,7 @@ namespace FantasyGameLinkedList
         static Quest SelectQuest(List<Quest> quests)
         {
             ShowQuests(quests);
-            Console.WriteLine("Choose a quest by number:");
+            Console.WriteLine("\nChoose a quest by number:");
             int choice = int.Parse(Console.ReadLine()) - 1;
 
             return quests[choice];
@@ -180,6 +185,10 @@ namespace FantasyGameLinkedList
 
         static void Main(string[] args)
         {
+            Console.WriteLine("Welcome to Dungeon Recruiters, Inc.! You're here to prove the world wrong.");
+            Console.WriteLine("Forget the stereotypes of lazy recruiters who toss adventurers into hopeless quests.");
+            Console.WriteLine("You’re here to select the best adventurers and ensure your party succeeds!");
+
             AdventurersGuild guild = new AdventurersGuild();
 
             // Recruit heroes with stats and backstories
@@ -203,11 +212,11 @@ namespace FantasyGameLinkedList
 
             if (success)
             {
-                Console.WriteLine("The quest is likely to succeed!");
+                Console.WriteLine("\nYour party completes the quest with flying colors! The world now knows you're not like the other recruiters.");
             }
             else
             {
-                Console.WriteLine("The quest is likely to fail...");
+                Console.WriteLine("\nYour party barely makes it out alive. Looks like you're not so different from the rest after all...");
             }
         }
     }
