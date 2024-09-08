@@ -33,6 +33,27 @@ namespace FantasyGameLinkedList
         }
     }
 
+    // Define the Quest class
+    public class Quest
+    {
+        public string Description { get; set; }
+        public List<string> Requirements { get; set; }  // E.g., "Rogue", "Mage", "Warrior"
+        public string Type { get; set; }  // E.g., "combat", "stealth", "dungeon"
+
+        public Quest(string description, string type, List<string> requirements)
+        {
+            Description = description;
+            Type = type;
+            Requirements = requirements;
+        }
+
+        // Return quest details as a string
+        public override string ToString()
+        {
+            return $"Quest: {Description} - Type: {Type} - Requirements: {string.Join(", ", Requirements)}";
+        }
+    }
+
     // Define the AdventurersGuild (Linked List)
     public class AdventurersGuild
     {
@@ -43,7 +64,7 @@ namespace FantasyGameLinkedList
             guildLeader = null;
         }
 
-        // Recruit a new hero with Pathfinder stats and backstory
+        // Recruit a new hero with stats and backstory
         public void RecruitHero(string name, string role, int strength, int dexterity, int constitution, string backstory)
         {
             Hero newHero = new Hero(name, role, strength, dexterity, constitution, backstory);
@@ -81,102 +102,82 @@ namespace FantasyGameLinkedList
             }
         }
 
-        // Save the guild list to a file with stats and backstories
-        public void SaveGuildToFile(string filePath)
-        {
-            using (StreamWriter writer = new StreamWriter(filePath))
-            {
-                Hero current = guildLeader;
-                while (current != null)
-                {
-                    writer.WriteLine($"{current.Name},{current.Role},{current.Strength},{current.Dexterity},{current.Constitution},{current.Backstory}");
-                    current = current.Next;
-                }
-            }
-            Console.WriteLine("Guild list saved to file.");
-        }
-
-        // Load the guild list from a file
-        public void LoadGuildFromFile(string filePath)
-        {
-            if (File.Exists(filePath))
-            {
-                guildLeader = null; // Reset the guild list before loading
-                using (StreamReader reader = new StreamReader(filePath))
-                {
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        string[] parts = line.Split(',');
-                        string name = parts[0];
-                        string role = parts[1];
-                        int strength = int.Parse(parts[2]);
-                        int dexterity = int.Parse(parts[3]);
-                        int constitution = int.Parse(parts[4]);
-                        string backstory = parts[5];
-                        RecruitHero(name, role, strength, dexterity, constitution, backstory);
-                    }
-                }
-                Console.WriteLine("Guild list loaded from file.");
-            }
-            else
-            {
-                Console.WriteLine("File not found.");
-            }
-        }
-
-        // Choose a party for a quest
-        public List<Hero> ChooseParty(int numHeroes)
+        // Choose a party for a quest based on quest requirements
+        public List<Hero> ChooseParty(Quest quest)
         {
             List<Hero> selectedParty = new List<Hero>();
             Hero current = guildLeader;
-            Random rand = new Random();
-            while (selectedParty.Count < numHeroes && current != null)
+
+            Console.WriteLine($"Selecting heroes for quest: {quest.Description}");
+            while (selectedParty.Count < quest.Requirements.Count && current != null)
             {
-                if (rand.NextDouble() > 0.5) // Randomly select heroes for now
+                if (quest.Requirements.Contains(current.Role))
                 {
                     selectedParty.Add(current);
+                    Console.WriteLine($"{current.Name} the {current.Role} has been selected for the quest.");
                 }
                 current = current.Next;
             }
 
-            Console.WriteLine($"Selected {selectedParty.Count} heroes for the quest:");
-            foreach (var hero in selectedParty)
+            if (selectedParty.Count < quest.Requirements.Count)
             {
-                Console.WriteLine(hero.ToString());
+                Console.WriteLine("The party does not meet all the quest requirements.");
             }
+
             return selectedParty;
         }
 
         // Evaluate whether the party is appropriate for the quest
-        public bool EvaluateQuestSuccess(List<Hero> party, string questType)
+        public bool EvaluateQuestSuccess(List<Hero> party, Quest quest)
         {
-            int totalStrength = 0;
-            int totalDexterity = 0;
-            foreach (var hero in party)
+            if (party.Count < quest.Requirements.Count)
             {
-                totalStrength += hero.Strength;
-                totalDexterity += hero.Dexterity;
+                Console.WriteLine("The party does not meet the quest's requirements. The quest is likely to fail.");
+                return false;
             }
 
-            // Example: For a combat-heavy quest, strength is more important
-            if (questType == "combat")
-            {
-                Console.WriteLine($"Total party strength: {totalStrength}");
-                return totalStrength > 30; // Arbitrary success threshold
-            }
-            else if (questType == "stealth")
-            {
-                Console.WriteLine($"Total party dexterity: {totalDexterity}");
-                return totalDexterity > 30;
-            }
-
-            return false;
+            Console.WriteLine("The party meets the quest's requirements. The quest is likely to succeed!");
+            return true;
         }
     }
 
     class Program
     {
+        // Define five different quests
+        static List<Quest> GenerateQuests()
+        {
+            List<Quest> quests = new List<Quest>
+            {
+                new Quest("Explore the Dark Dungeon, full of traps and enchanted foes.", "dungeon", new List<string> { "Rogue", "Mage" }),
+                new Quest("Defend the village from an oncoming horde of goblins.", "battle", new List<string> { "Warrior", "Mage" }),
+                new Quest("Infiltrate the enemy's fortress without being detected.", "stealth", new List<string> { "Rogue", "Rogue" }),
+                new Quest("Escort a caravan across treacherous mountain passes.", "escort", new List<string> { "Warrior", "Warrior", "Rogue" }),
+                new Quest("Retrieve the magical artifact from a cursed temple.", "magic", new List<string> { "Mage", "Rogue" })
+            };
+
+            return quests;
+        }
+
+        // Display available quests
+        static void ShowQuests(List<Quest> quests)
+        {
+            Console.WriteLine("\nAvailable Quests:");
+            for (int i = 0; i < quests.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}: {quests[i].ToString()}");
+            }
+        }
+
+        // Allow the user to select a quest
+        static Quest SelectQuest(List<Quest> quests)
+        {
+            ShowQuests(quests);
+            Console.WriteLine("Choose a quest by number:");
+            int choice = int.Parse(Console.ReadLine()) - 1;
+
+            return quests[choice];
+        }
+
         static void Main(string[] args)
         {
             AdventurersGuild guild = new AdventurersGuild();
@@ -190,9 +191,15 @@ namespace FantasyGameLinkedList
             // Show the guild members
             guild.ShowGuild();
 
-            // Select a party for a combat quest
-            var party = guild.ChooseParty(3);
-            bool success = guild.EvaluateQuestSuccess(party, "combat");
+            // Generate and display available quests
+            List<Quest> quests = GenerateQuests();
+            Quest selectedQuest = SelectQuest(quests);
+
+            // Select a party for the quest
+            var party = guild.ChooseParty(selectedQuest);
+
+            // Evaluate quest success
+            bool success = guild.EvaluateQuestSuccess(party, selectedQuest);
 
             if (success)
             {
