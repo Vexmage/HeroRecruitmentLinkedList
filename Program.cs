@@ -12,16 +12,22 @@ namespace FantasyGameLinkedList
         public int Strength { get; set; }
         public int Dexterity { get; set; }
         public int Constitution { get; set; }
+        public int Intelligence { get; set; }  // New mental stat
+        public int Wisdom { get; set; }        // New mental stat
+        public int Charisma { get; set; }      // New mental stat
         public string Backstory { get; set; }
         public Hero Next { get; set; }
 
-        public Hero(string name, string role, int strength, int dexterity, int constitution, string backstory)
+        public Hero(string name, string role, int strength, int dexterity, int constitution, int intelligence, int wisdom, int charisma, string backstory)
         {
             Name = name;
             Role = role;
             Strength = strength;
             Dexterity = dexterity;
             Constitution = constitution;
+            Intelligence = intelligence;
+            Wisdom = wisdom;
+            Charisma = charisma;
             Backstory = backstory;
             Next = null;
         }
@@ -29,7 +35,7 @@ namespace FantasyGameLinkedList
         // Return hero details as a string
         public override string ToString()
         {
-            return $"{Name} [{Role}] - STR: {Strength}, DEX: {Dexterity}, CON: {Constitution} - {Backstory}";
+            return $"{Name} [{Role}] - STR: {Strength}, DEX: {Dexterity}, CON: {Constitution}, INT: {Intelligence}, WIS: {Wisdom}, CHA: {Charisma} - {Backstory}";
         }
     }
 
@@ -65,9 +71,9 @@ namespace FantasyGameLinkedList
         }
 
         // Recruit a new hero with stats and backstory
-        public void RecruitHero(string name, string role, int strength, int dexterity, int constitution, string backstory)
+        public void RecruitHero(string name, string role, int strength, int dexterity, int constitution, int intelligence, int wisdom, int charisma, string backstory)
         {
-            Hero newHero = new Hero(name, role, strength, dexterity, constitution, backstory);
+            Hero newHero = new Hero(name, role, strength, dexterity, constitution, intelligence, wisdom, charisma, backstory);
             if (guildLeader == null)
             {
                 guildLeader = newHero;
@@ -216,16 +222,16 @@ namespace FantasyGameLinkedList
 
             AdventurersGuild guild = new AdventurersGuild();
 
-            // Recruit heroes with stats and backstories
-            guild.RecruitHero("Aldric the Brave", "Warrior", 18, 12, 16, "A veteran of countless wars, Aldric leads with courage and strength.");
-            guild.RecruitHero("Luna the Swift", "Rogue", 12, 20, 14, "Luna is a nimble rogue, who grew up in the streets and knows how to survive.");
-            guild.RecruitHero("Kael the Rogue", "Rogue", 14, 18, 12, "Once a thief, Kael now seeks redemption through aiding those in need.");
-            guild.RecruitHero("Zara the Sorceress", "Mage", 8, 16, 10, "Zara wields arcane powers and seeks lost magical knowledge in ancient ruins.");
-            guild.RecruitHero("Eldrin the Wise", "Cleric", 10, 14, 18, "Eldrin is a healer with deep knowledge of the divine, able to heal the gravest wounds.");
-            guild.RecruitHero("Sylva the Hunter", "Ranger", 16, 18, 14, "Sylva is a master archer and survivalist, well-versed in tracking through wilderness.");
-            guild.RecruitHero("Thorne the Just", "Paladin", 18, 10, 18, "Thorne combines martial prowess with divine healing, sworn to protect the innocent.");
-            guild.RecruitHero("Bryn the Bard", "Bard", 12, 16, 14, "Bryn inspires the team with songs of bravery and hope, turning the tide of battle.");
-            guild.RecruitHero("Milo the Silent", "Monk", 14, 20, 12, "Milo is a master of unarmed combat, relying on agility and speed to defeat his foes.");
+            // Recruit heroes with physical and mental stats, and backstories
+            guild.RecruitHero("Aldric the Brave", "Warrior", 18, 12, 16, 10, 8, 12, "A veteran of countless wars, Aldric leads with courage and strength.");
+            guild.RecruitHero("Luna the Swift", "Rogue", 12, 20, 14, 12, 10, 10, "Luna is a nimble rogue, who grew up in the streets and knows how to survive.");
+            guild.RecruitHero("Kael the Rogue", "Rogue", 14, 18, 12, 13, 12, 8, "Once a thief, Kael now seeks redemption through aiding those in need.");
+            guild.RecruitHero("Zara the Sorceress", "Mage", 8, 16, 10, 18, 12, 16, "Zara wields arcane powers and seeks lost magical knowledge in ancient ruins.");
+            guild.RecruitHero("Eldrin the Wise", "Cleric", 10, 14, 18, 14, 18, 12, "Eldrin is a healer with deep knowledge of the divine, able to heal the gravest wounds.");
+            guild.RecruitHero("Sylva the Hunter", "Ranger", 16, 18, 14, 12, 16, 10, "Sylva is a master archer and survivalist, well-versed in tracking through wilderness.");
+            guild.RecruitHero("Thorne the Just", "Paladin", 18, 10, 18, 12, 14, 16, "Thorne combines martial prowess with divine healing, sworn to protect the innocent.");
+            guild.RecruitHero("Bryn the Bard", "Bard", 12, 16, 14, 10, 14, 18, "Bryn inspires the team with songs of bravery and hope, turning the tide of battle.");
+            guild.RecruitHero("Milo the Silent", "Monk", 14, 20, 12, 12, 16, 10, "Milo is a master of unarmed combat, relying on agility and speed to defeat his foes.");
 
             // Show the guild members
             guild.ShowGuild();
