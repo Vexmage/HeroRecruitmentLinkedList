@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;  // For file operations
 
 namespace FantasyGameLinkedList
 {
@@ -105,6 +106,43 @@ namespace FantasyGameLinkedList
                 current.Next = current.Next.Next;
             }
         }
+
+        // Save the guild list to a file
+        public void SaveGuildToFile(string filePath)
+        {
+            using (StreamWriter writer = new StreamWriter(filePath))
+            {
+                Hero current = guildLeader;
+                while (current != null)
+                {
+                    writer.WriteLine(current.Name);
+                    current = current.Next;
+                }
+            }
+            Console.WriteLine("Guild list saved to file.");
+        }
+
+        // Load the guild list from a file
+        public void LoadGuildFromFile(string filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                guildLeader = null; // Reset the guild list before loading
+                using (StreamReader reader = new StreamReader(filePath))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        RecruitHero(line);  // Add each hero from the file
+                    }
+                }
+                Console.WriteLine("Guild list loaded from file.");
+            }
+            else
+            {
+                Console.WriteLine("File not found.");
+            }
+        }
     }
 
     class Program
@@ -119,15 +157,20 @@ namespace FantasyGameLinkedList
             guild.RecruitHero("Kael the Rogue");
             guild.RecruitHero("Zara the Sorceress");
 
-            guild.ShowGuild(); // Output: Guild Members: Aldric the Brave -> Luna the Swift -> Kael the Rogue -> Zara the Sorceress -> End of Guild.
+            // Show the guild
+            guild.ShowGuild();
 
-            // Search for a hero
-            guild.SearchHero("Kael the Rogue");  // Output: Kael the Rogue is part of the Adventurers' Guild!
-            guild.SearchHero("Thorn the Druid"); // Output: Thorn the Druid is not in the guild.
+            // Save the guild to a file
+            string filePath = "guild.txt";
+            guild.SaveGuildToFile(filePath);
 
-            // Remove a hero
-            guild.RemoveHero("Kael the Rogue"); // Output: Kael the Rogue has left the guild!
-            guild.ShowGuild(); // Output: Guild Members: Aldric the Brave -> Luna the Swift -> Zara the Sorceress -> End of Guild.
+            // Clear the guild and show it's empty
+            guild = new AdventurersGuild(); // New empty guild
+            guild.ShowGuild();
+
+            // Load the guild from a file
+            guild.LoadGuildFromFile(filePath);
+            guild.ShowGuild();  // Should now show the guild from the file
         }
     }
 }
