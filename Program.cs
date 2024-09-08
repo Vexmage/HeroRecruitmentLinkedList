@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace FantasyGameLinkedList
 {
@@ -7,15 +8,17 @@ namespace FantasyGameLinkedList
     public class Hero
     {
         public string Name { get; set; }
+        public string Role { get; set; }  // Warrior, Rogue, Mage, etc.
         public int Strength { get; set; }
         public int Dexterity { get; set; }
         public int Constitution { get; set; }
         public string Backstory { get; set; }
         public Hero Next { get; set; }
 
-        public Hero(string name, int strength, int dexterity, int constitution, string backstory)
+        public Hero(string name, string role, int strength, int dexterity, int constitution, string backstory)
         {
             Name = name;
+            Role = role;
             Strength = strength;
             Dexterity = dexterity;
             Constitution = constitution;
@@ -26,7 +29,7 @@ namespace FantasyGameLinkedList
         // Return hero details as a string
         public override string ToString()
         {
-            return $"{Name} [STR: {Strength}, DEX: {Dexterity}, CON: {Constitution}] - {Backstory}";
+            return $"{Name} [{Role}] - STR: {Strength}, DEX: {Dexterity}, CON: {Constitution} - {Backstory}";
         }
     }
 
@@ -41,9 +44,9 @@ namespace FantasyGameLinkedList
         }
 
         // Recruit a new hero with Pathfinder stats and backstory
-        public void RecruitHero(string name, int strength, int dexterity, int constitution, string backstory)
+        public void RecruitHero(string name, string role, int strength, int dexterity, int constitution, string backstory)
         {
-            Hero newHero = new Hero(name, strength, dexterity, constitution, backstory);
+            Hero newHero = new Hero(name, role, strength, dexterity, constitution, backstory);
             if (guildLeader == null)
             {
                 guildLeader = newHero;
@@ -86,7 +89,7 @@ namespace FantasyGameLinkedList
                 Hero current = guildLeader;
                 while (current != null)
                 {
-                    writer.WriteLine($"{current.Name},{current.Strength},{current.Dexterity},{current.Constitution},{current.Backstory}");
+                    writer.WriteLine($"{current.Name},{current.Role},{current.Strength},{current.Dexterity},{current.Constitution},{current.Backstory}");
                     current = current.Next;
                 }
             }
@@ -106,11 +109,12 @@ namespace FantasyGameLinkedList
                     {
                         string[] parts = line.Split(',');
                         string name = parts[0];
-                        int strength = int.Parse(parts[1]);
-                        int dexterity = int.Parse(parts[2]);
-                        int constitution = int.Parse(parts[3]);
-                        string backstory = parts[4];
-                        RecruitHero(name, strength, dexterity, constitution, backstory);
+                        string role = parts[1];
+                        int strength = int.Parse(parts[2]);
+                        int dexterity = int.Parse(parts[3]);
+                        int constitution = int.Parse(parts[4]);
+                        string backstory = parts[5];
+                        RecruitHero(name, role, strength, dexterity, constitution, backstory);
                     }
                 }
                 Console.WriteLine("Guild list loaded from file.");
@@ -119,6 +123,55 @@ namespace FantasyGameLinkedList
             {
                 Console.WriteLine("File not found.");
             }
+        }
+
+        // Choose a party for a quest
+        public List<Hero> ChooseParty(int numHeroes)
+        {
+            List<Hero> selectedParty = new List<Hero>();
+            Hero current = guildLeader;
+            Random rand = new Random();
+            while (selectedParty.Count < numHeroes && current != null)
+            {
+                if (rand.NextDouble() > 0.5) // Randomly select heroes for now
+                {
+                    selectedParty.Add(current);
+                }
+                current = current.Next;
+            }
+
+            Console.WriteLine($"Selected {selectedParty.Count} heroes for the quest:");
+            foreach (var hero in selectedParty)
+            {
+                Console.WriteLine(hero.ToString());
+            }
+            return selectedParty;
+        }
+
+        // Evaluate whether the party is appropriate for the quest
+        public bool EvaluateQuestSuccess(List<Hero> party, string questType)
+        {
+            int totalStrength = 0;
+            int totalDexterity = 0;
+            foreach (var hero in party)
+            {
+                totalStrength += hero.Strength;
+                totalDexterity += hero.Dexterity;
+            }
+
+            // Example: For a combat-heavy quest, strength is more important
+            if (questType == "combat")
+            {
+                Console.WriteLine($"Total party strength: {totalStrength}");
+                return totalStrength > 30; // Arbitrary success threshold
+            }
+            else if (questType == "stealth")
+            {
+                Console.WriteLine($"Total party dexterity: {totalDexterity}");
+                return totalDexterity > 30;
+            }
+
+            return false;
         }
     }
 
@@ -129,25 +182,26 @@ namespace FantasyGameLinkedList
             AdventurersGuild guild = new AdventurersGuild();
 
             // Recruit heroes with stats and backstories
-            guild.RecruitHero("Aldric the Brave", 18, 14, 16, "A veteran of countless wars, Aldric leads with courage and strength.");
-            guild.RecruitHero("Luna the Swift", 12, 20, 13, "Luna is a nimble rogue, who grew up in the streets and knows how to survive.");
-            guild.RecruitHero("Kael the Rogue", 14, 18, 12, "Once a thief, Kael now seeks redemption through aiding those in need.");
-            guild.RecruitHero("Zara the Sorceress", 8, 16, 10, "Zara wields arcane powers and seeks lost magical knowledge in ancient ruins.");
+            guild.RecruitHero("Aldric the Brave", "Warrior", 18, 12, 16, "A veteran of countless wars, Aldric leads with courage and strength.");
+            guild.RecruitHero("Luna the Swift", "Rogue", 12, 20, 14, "Luna is a nimble rogue, who grew up in the streets and knows how to survive.");
+            guild.RecruitHero("Kael the Rogue", "Rogue", 14, 18, 12, "Once a thief, Kael now seeks redemption through aiding those in need.");
+            guild.RecruitHero("Zara the Sorceress", "Mage", 8, 16, 10, "Zara wields arcane powers and seeks lost magical knowledge in ancient ruins.");
 
-            // Show the guild members with their stats and backstories
+            // Show the guild members
             guild.ShowGuild();
 
-            // Save the guild to a file
-            string filePath = "guild.txt";
-            guild.SaveGuildToFile(filePath);
+            // Select a party for a combat quest
+            var party = guild.ChooseParty(3);
+            bool success = guild.EvaluateQuestSuccess(party, "combat");
 
-            // Clear the guild and show it's empty
-            guild = new AdventurersGuild();
-            guild.ShowGuild();  // Output: The Adventurers' Guild is empty.
-
-            // Load the guild from the file and show it again
-            guild.LoadGuildFromFile(filePath);
-            guild.ShowGuild();  // Output: Restores the guild members from the file.
+            if (success)
+            {
+                Console.WriteLine("The quest is likely to succeed!");
+            }
+            else
+            {
+                Console.WriteLine("The quest is likely to fail...");
+            }
         }
     }
 }
