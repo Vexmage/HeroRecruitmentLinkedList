@@ -102,53 +102,70 @@ namespace FantasyGameLinkedList
             }
         }
 
-        // Choose a party for a quest based on quest requirements
-        public List<Hero> ChooseParty(Quest quest)
+        // Choose a party of 4 heroes for a quest based on quest requirements
+        public List<Hero> ChooseParty()
         {
             List<Hero> selectedParty = new List<Hero>();
             Hero current = guildLeader;
+            Random rand = new Random();
+            int heroesSelected = 0;
 
-            Console.WriteLine($"\nAs a dungeon recruiter trying to fight the bad rep...");
-            Console.WriteLine($"Selecting heroes carefully for the quest: {quest.Description}");
+            Console.WriteLine("\nSelecting 4 heroes for the quest:");
 
-            while (selectedParty.Count < quest.Requirements.Count && current != null)
+            // Randomly select heroes until we have 4, or there are no more heroes
+            while (current != null && heroesSelected < 4)
             {
-                if (quest.Requirements.Contains(current.Role))
-                {
-                    selectedParty.Add(current);
-                    Console.WriteLine($"{current.Name} the {current.Role} has been selected for the quest.");
-                }
+                selectedParty.Add(current);
+                Console.WriteLine($"{current.Name} the {current.Role} has been selected for the quest.");
                 current = current.Next;
+                heroesSelected++;
             }
 
-            if (selectedParty.Count < quest.Requirements.Count)
+            // If there are fewer than 4 heroes in the guild, warn the player
+            if (selectedParty.Count < 4)
             {
-                Console.WriteLine("The party doesn't quite meet all the quest requirements...");
-                Console.WriteLine("It seems you're falling into the same trap as the lazy recruiters before you!");
+                Console.WriteLine("Warning: You don't have enough heroes in the guild for a full party. The party will be incomplete!");
             }
 
             return selectedParty;
         }
 
-        // Evaluate whether the party is appropriate for the quest
+        // Evaluate whether the party is appropriate for the quest using a simple probability system
         public bool EvaluateQuestSuccess(List<Hero> party, Quest quest)
         {
-            if (party.Count < quest.Requirements.Count)
+            int matches = 0;
+
+            // Check how many party members match the quest's requirements
+            foreach (var hero in party)
             {
-                Console.WriteLine("\nOh no! The party doesn't meet the quest's requirements.");
-                Console.WriteLine("Looks like you're following in the footsteps of every other dungeon recruiter...");
-                return false;
+                if (quest.Requirements.Contains(hero.Role))
+                {
+                    matches++;
+                }
             }
 
-            Console.WriteLine("\nSuccess! You've done what no recruiter has done before—assembled the right party!");
-            Console.WriteLine("The quest is likely to succeed, and your reputation as a skilled recruiter will grow!");
-            return true;
+            // Calculate the chance of success based on the number of matched heroes
+            Random rand = new Random();
+            int successThreshold = 40 + (matches * 15); // Base success rate 40%, increases by 15% for each matched hero
+            int roll = rand.Next(1, 101); // Roll between 1-100
+
+            Console.WriteLine($"\nQuest Success Roll: {roll}. Needed: {successThreshold} or below to succeed.");
+            if (roll <= successThreshold)
+            {
+                Console.WriteLine("\nSuccess! The quest was completed successfully!");
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("\nFailure! The quest did not succeed.");
+                return false;
+            }
         }
     }
 
     class Program
     {
-        // Define five different quests
+        // Define new quests with a wider variety of hero types
         static List<Quest> GenerateQuests()
         {
             List<Quest> quests = new List<Quest>
@@ -157,7 +174,12 @@ namespace FantasyGameLinkedList
                 new Quest("Defend the village from an oncoming horde of goblins.", "battle", new List<string> { "Warrior", "Mage" }),
                 new Quest("Infiltrate the enemy's fortress without being detected.", "stealth", new List<string> { "Rogue", "Rogue" }),
                 new Quest("Escort a caravan across treacherous mountain passes.", "escort", new List<string> { "Warrior", "Warrior", "Rogue" }),
-                new Quest("Retrieve the magical artifact from a cursed temple.", "magic", new List<string> { "Mage", "Rogue" })
+                new Quest("Retrieve the magical artifact from a cursed temple.", "magic", new List<string> { "Mage", "Rogue" }),
+                new Quest("Healing Waters", "healing", new List<string> { "Cleric", "Ranger" }),
+                new Quest("The Siege of Dragonspire", "battle", new List<string> { "Warrior", "Paladin", "Bard" }),
+                new Quest("The Poisoned Crypt", "dungeon", new List<string> { "Rogue", "Cleric" }),
+                new Quest("The Hunt for the Shadow Beast", "hunt", new List<string> { "Ranger", "Rogue", "Monk" }),
+                new Quest("The Broken Artifact", "magic", new List<string> { "Mage", "Paladin" })
             };
 
             return quests;
@@ -185,9 +207,12 @@ namespace FantasyGameLinkedList
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Welcome to Dungeon Recruiters, Inc.! You're here to prove the world wrong.");
-            Console.WriteLine("Forget the stereotypes of lazy recruiters who toss adventurers into hopeless quests.");
-            Console.WriteLine("You’re here to select the best adventurers and ensure your party succeeds!");
+            // Beginning Description
+            Console.WriteLine("Welcome to *Heroes Recruited*! Your one-stop shop for all things heroic staffing!");
+            Console.WriteLine("You’ve been appointed by your lord to oversee the delicate art of recruitment, tasked with hiring, organizing, and deploying a party of adventurers to tackle quests.");
+            Console.WriteLine("It's not just about waving swords and casting spells—you’ll need to carefully review each hero’s resume, matching their skills to the task at hand.");
+            Console.WriteLine("Be warned: Not every hero is as qualified as they claim. Some may be perfect for the job, while others... well, let’s just say, they might struggle with basic dungeon navigation.");
+            Console.WriteLine("Your mission? Ensure that your recruits are well-suited to the perilous journeys ahead—or at least, that they survive long enough to bring back some loot!");
 
             AdventurersGuild guild = new AdventurersGuild();
 
@@ -196,6 +221,11 @@ namespace FantasyGameLinkedList
             guild.RecruitHero("Luna the Swift", "Rogue", 12, 20, 14, "Luna is a nimble rogue, who grew up in the streets and knows how to survive.");
             guild.RecruitHero("Kael the Rogue", "Rogue", 14, 18, 12, "Once a thief, Kael now seeks redemption through aiding those in need.");
             guild.RecruitHero("Zara the Sorceress", "Mage", 8, 16, 10, "Zara wields arcane powers and seeks lost magical knowledge in ancient ruins.");
+            guild.RecruitHero("Eldrin the Wise", "Cleric", 10, 14, 18, "Eldrin is a healer with deep knowledge of the divine, able to heal the gravest wounds.");
+            guild.RecruitHero("Sylva the Hunter", "Ranger", 16, 18, 14, "Sylva is a master archer and survivalist, well-versed in tracking through wilderness.");
+            guild.RecruitHero("Thorne the Just", "Paladin", 18, 10, 18, "Thorne combines martial prowess with divine healing, sworn to protect the innocent.");
+            guild.RecruitHero("Bryn the Bard", "Bard", 12, 16, 14, "Bryn inspires the team with songs of bravery and hope, turning the tide of battle.");
+            guild.RecruitHero("Milo the Silent", "Monk", 14, 20, 12, "Milo is a master of unarmed combat, relying on agility and speed to defeat his foes.");
 
             // Show the guild members
             guild.ShowGuild();
@@ -204,8 +234,8 @@ namespace FantasyGameLinkedList
             List<Quest> quests = GenerateQuests();
             Quest selectedQuest = SelectQuest(quests);
 
-            // Select a party for the quest
-            var party = guild.ChooseParty(selectedQuest);
+            // Select a party of 4 for the quest
+            var party = guild.ChooseParty();
 
             // Evaluate quest success
             bool success = guild.EvaluateQuestSuccess(party, selectedQuest);
