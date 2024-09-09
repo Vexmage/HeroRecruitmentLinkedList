@@ -8,17 +8,18 @@ namespace FantasyGameLinkedList
     public class Hero
     {
         public string Name { get; set; }
-        public string Role { get; set; }  // Warrior, Rogue, Mage, etc.
+        public string Role { get; set; }
         public int Strength { get; set; }
         public int Dexterity { get; set; }
         public int Constitution { get; set; }
-        public int Intelligence { get; set; }  // New mental stat
-        public int Wisdom { get; set; }        // New mental stat
-        public int Charisma { get; set; }      // New mental stat
+        public int Intelligence { get; set; }
+        public int Wisdom { get; set; }
+        public int Charisma { get; set; }
         public string Backstory { get; set; }
+        public string SpecialAbility { get; set; }  // New Special Ability
         public Hero Next { get; set; }
 
-        public Hero(string name, string role, int strength, int dexterity, int constitution, int intelligence, int wisdom, int charisma, string backstory)
+        public Hero(string name, string role, int strength, int dexterity, int constitution, int intelligence, int wisdom, int charisma, string specialAbility, string backstory)
         {
             Name = name;
             Role = role;
@@ -28,6 +29,7 @@ namespace FantasyGameLinkedList
             Intelligence = intelligence;
             Wisdom = wisdom;
             Charisma = charisma;
+            SpecialAbility = specialAbility;
             Backstory = backstory;
             Next = null;
         }
@@ -35,7 +37,7 @@ namespace FantasyGameLinkedList
         // Return hero details as a string
         public override string ToString()
         {
-            return $"{Name} [{Role}] - STR: {Strength}, DEX: {Dexterity}, CON: {Constitution}, INT: {Intelligence}, WIS: {Wisdom}, CHA: {Charisma} - {Backstory}";
+            return $"{Name} [{Role}] - STR: {Strength}, DEX: {Dexterity}, CON: {Constitution}, INT: {Intelligence}, WIS: {Wisdom}, CHA: {Charisma} - Ability: {SpecialAbility} - {Backstory}";
         }
     }
 
@@ -43,8 +45,8 @@ namespace FantasyGameLinkedList
     public class Quest
     {
         public string Description { get; set; }
-        public List<string> Requirements { get; set; }  // E.g., "Rogue", "Mage", "Warrior"
-        public string Type { get; set; }  // E.g., "combat", "stealth", "dungeon"
+        public List<string> Requirements { get; set; }
+        public string Type { get; set; }
 
         public Quest(string description, string type, List<string> requirements)
         {
@@ -53,7 +55,6 @@ namespace FantasyGameLinkedList
             Requirements = requirements;
         }
 
-        // Return quest details as a string
         public override string ToString()
         {
             return $"Quest: {Description} - Type: {Type} - Requirements: {string.Join(", ", Requirements)}";
@@ -70,10 +71,10 @@ namespace FantasyGameLinkedList
             guildLeader = null;
         }
 
-        // Recruit a new hero with stats and backstory
-        public void RecruitHero(string name, string role, int strength, int dexterity, int constitution, int intelligence, int wisdom, int charisma, string backstory)
+        // Recruit a new hero
+        public void RecruitHero(string name, string role, int strength, int dexterity, int constitution, int intelligence, int wisdom, int charisma, string specialAbility, string backstory)
         {
-            Hero newHero = new Hero(name, role, strength, dexterity, constitution, intelligence, wisdom, charisma, backstory);
+            Hero newHero = new Hero(name, role, strength, dexterity, constitution, intelligence, wisdom, charisma, specialAbility, backstory);
             if (guildLeader == null)
             {
                 guildLeader = newHero;
@@ -90,7 +91,7 @@ namespace FantasyGameLinkedList
             Console.WriteLine($"{name} has joined the Adventurers' Guild!");
         }
 
-        // Display the guild members with stats and backstories
+        // Display the guild members
         public void ShowGuild()
         {
             if (guildLeader == null)
@@ -108,7 +109,7 @@ namespace FantasyGameLinkedList
             }
         }
 
-        // Choose a party of 4 heroes for a quest based on quest requirements
+        // Choose a party of 4 heroes for a quest
         public List<Hero> ChooseParty()
         {
             List<Hero> selectedParty = new List<Hero>();
@@ -118,7 +119,7 @@ namespace FantasyGameLinkedList
 
             Console.WriteLine("\nSelecting 4 heroes for the quest:");
 
-            // Randomly select heroes until we have 4, or there are no more heroes
+            // Randomly select heroes until we have 4
             while (current != null && heroesSelected < 4)
             {
                 selectedParty.Add(current);
@@ -127,16 +128,40 @@ namespace FantasyGameLinkedList
                 heroesSelected++;
             }
 
-            // If there are fewer than 4 heroes in the guild, warn the player
+            // Warn the player if there are fewer than 4 heroes
             if (selectedParty.Count < 4)
             {
-                Console.WriteLine("Warning: You don't have enough heroes in the guild for a full party. The party will be incomplete!");
+                Console.WriteLine("Warning: You don't have enough heroes in the guild for a full party.");
             }
 
             return selectedParty;
         }
 
-        // Evaluate whether the party is appropriate for the quest using a simple probability system
+        // Handle random events during a quest
+        public void HandleRandomEvent()
+        {
+            Random rand = new Random();
+            int eventRoll = rand.Next(1, 101);
+
+            if (eventRoll <= 20)
+            {
+                Console.WriteLine("A bandit ambush occurred! The party takes damage but escapes.");
+            }
+            else if (eventRoll <= 40)
+            {
+                Console.WriteLine("A magical storm disrupts the party's journey, delaying their progress.");
+            }
+            else if (eventRoll <= 60)
+            {
+                Console.WriteLine("The party stumbles upon hidden treasure, boosting their morale.");
+            }
+            else
+            {
+                Console.WriteLine("The journey is uneventful.");
+            }
+        }
+
+        // Evaluate whether the party is appropriate for the quest
         public bool EvaluateQuestSuccess(List<Hero> party, Quest quest)
         {
             int matches = 0;
@@ -150,10 +175,26 @@ namespace FantasyGameLinkedList
                 }
             }
 
-            // Calculate the chance of success based on the number of matched heroes
+            // Check for hero special abilities that impact the quest
+            foreach (var hero in party)
+            {
+                if (hero.SpecialAbility == "Battle Cry" && quest.Type == "battle")
+                {
+                    matches++;
+                    Console.WriteLine($"{hero.Name} uses Battle Cry! The party's chances of success increase.");
+                }
+                else if (hero.SpecialAbility == "Trap Disarm" && quest.Type == "dungeon")
+                {
+                    matches++;
+                    Console.WriteLine($"{hero.Name} uses Trap Disarm! The party avoids traps in the dungeon.");
+                }
+                // Add more abilities as needed
+            }
+
+            // Calculate the chance of success based on matched heroes and abilities
             Random rand = new Random();
-            int successThreshold = 40 + (matches * 15); // Base success rate 40%, increases by 15% for each matched hero
-            int roll = rand.Next(1, 101); // Roll between 1-100
+            int successThreshold = 40 + (matches * 15);  // Base success rate 40%, increases by 15% for each match
+            int roll = rand.Next(1, 101);
 
             Console.WriteLine($"\nQuest Success Roll: {roll}. Needed: {successThreshold} or below to succeed.");
             if (roll <= successThreshold)
@@ -171,7 +212,7 @@ namespace FantasyGameLinkedList
 
     class Program
     {
-        // Define new quests with a wider variety of hero types
+        // Define quests with a variety of hero types
         static List<Quest> GenerateQuests()
         {
             List<Quest> quests = new List<Quest>
@@ -213,25 +254,15 @@ namespace FantasyGameLinkedList
 
         static void Main(string[] args)
         {
-            // Beginning Description
             Console.WriteLine("Welcome to *Heroes Recruited*! Your one-stop shop for all things heroic staffing!");
-            Console.WriteLine("You’ve been appointed by your lord to oversee the delicate art of recruitment, tasked with hiring, organizing, and deploying a party of adventurers to tackle quests.");
-            Console.WriteLine("It's not just about waving swords and casting spells—you’ll need to carefully review each hero’s resume, matching their skills to the task at hand.");
-            Console.WriteLine("Be warned: Not every hero is as qualified as they claim. Some may be perfect for the job, while others... well, let’s just say, they might struggle with basic dungeon navigation.");
-            Console.WriteLine("Your mission? Ensure that your recruits are well-suited to the perilous journeys ahead—or at least, that they survive long enough to bring back some loot!");
 
             AdventurersGuild guild = new AdventurersGuild();
 
-            // Recruit heroes with physical and mental stats, and backstories
-            guild.RecruitHero("Aldric the Brave", "Warrior", 18, 12, 16, 10, 8, 12, "A veteran of countless wars, Aldric leads with courage and strength.");
-            guild.RecruitHero("Luna the Swift", "Rogue", 12, 20, 14, 12, 10, 10, "Luna is a nimble rogue, who grew up in the streets and knows how to survive.");
-            guild.RecruitHero("Kael the Rogue", "Rogue", 14, 18, 12, 13, 12, 8, "Once a thief, Kael now seeks redemption through aiding those in need.");
-            guild.RecruitHero("Zara the Sorceress", "Mage", 8, 16, 10, 18, 12, 16, "Zara wields arcane powers and seeks lost magical knowledge in ancient ruins.");
-            guild.RecruitHero("Eldrin the Wise", "Cleric", 10, 14, 18, 14, 18, 12, "Eldrin is a healer with deep knowledge of the divine, able to heal the gravest wounds.");
-            guild.RecruitHero("Sylva the Hunter", "Ranger", 16, 18, 14, 12, 16, 10, "Sylva is a master archer and survivalist, well-versed in tracking through wilderness.");
-            guild.RecruitHero("Thorne the Just", "Paladin", 18, 10, 18, 12, 14, 16, "Thorne combines martial prowess with divine healing, sworn to protect the innocent.");
-            guild.RecruitHero("Bryn the Bard", "Bard", 12, 16, 14, 10, 14, 18, "Bryn inspires the team with songs of bravery and hope, turning the tide of battle.");
-            guild.RecruitHero("Milo the Silent", "Monk", 14, 20, 12, 12, 16, 10, "Milo is a master of unarmed combat, relying on agility and speed to defeat his foes.");
+            // Recruit heroes with stats, backstories, and special abilities
+            guild.RecruitHero("Aldric the Brave", "Warrior", 18, 12, 16, 10, 8, 12, "Battle Cry", "A veteran of countless wars, Aldric leads with courage and strength.");
+            guild.RecruitHero("Luna the Swift", "Rogue", 12, 20, 14, 12, 10, 10, "Trap Disarm", "Luna is a nimble rogue, who grew up in the streets and knows how to survive.");
+            guild.RecruitHero("Zara the Sorceress", "Mage", 8, 16, 10, 18, 12, 16, "Arcane Shield", "Zara wields arcane powers and seeks lost magical knowledge.");
+            guild.RecruitHero("Eldrin the Wise", "Cleric", 10, 14, 18, 14, 18, 12, "Divine Healing", "Eldrin is a healer with deep knowledge of the divine.");
 
             // Show the guild members
             guild.ShowGuild();
@@ -243,16 +274,19 @@ namespace FantasyGameLinkedList
             // Select a party of 4 for the quest
             var party = guild.ChooseParty();
 
+            // Handle a random event during the quest
+            guild.HandleRandomEvent();
+
             // Evaluate quest success
             bool success = guild.EvaluateQuestSuccess(party, selectedQuest);
 
             if (success)
             {
-                Console.WriteLine("\nYour party completes the quest with flying colors! The world now knows you're not like the other recruiters.");
+                Console.WriteLine("\nYour party completes the quest with flying colors!");
             }
             else
             {
-                Console.WriteLine("\nYour party barely makes it out alive. Looks like you're not so different from the rest after all...");
+                Console.WriteLine("\nYour party barely makes it out alive...");
             }
         }
     }
